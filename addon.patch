@@ -1,0 +1,73 @@
+diff --git a/data/cleopatra.js b/data/cleopatra.js
+index df459f3..7be6d84 100644
+--- a/data/cleopatra.js
++++ b/data/cleopatra.js
+@@ -46,4 +46,4 @@ self.port.on("getprofile", function(val) {
+     document.getElementsByTagName("button")[0].click();
+ });
+ 
+-init();
+\ No newline at end of file
++init();
+diff --git a/geckoprofiler.xpi b/geckoprofiler.xpi
+index a871c0b..43e7361 100644
+Binary files a/geckoprofiler.xpi and b/geckoprofiler.xpi differ
+diff --git a/lib/main.js b/lib/main.js
+index abc48a0..08b9d5c 100644
+--- a/lib/main.js
++++ b/lib/main.js
+@@ -95,7 +95,7 @@ function sps_update_status() {
+ function has_stackwalk() {
+     var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
+     var platform = hh["platform"];
+-    if (platform != "Macintosh") return false;
++    //if (platform != "Macintosh") return false;
+     for(var i = 0; i < profilerFeatures.length; i++) {
+         if (profilerFeatures[i] == "stackwalk")
+           return true;
+@@ -132,6 +132,22 @@ function sps_startup(force) {
+     }
+ }
+ 
++function win_sym_profile(profile, progress_callback, finish_callback) {
++            progress_callback("Symbolicating...");
++        var storeRequest = Request({
++          url: "http://localhost:8080/",
++          content: profile,
++          onComplete: function (response) {
++            if (finish_callback != null) {
++              finish_callback(response.text);
++            }
++          }
++        }).post();
++            //if (finish_callback != null) {
++            //  finish_callback(profile);
++            //}
++}
++
+ function store_profile(callback) {
+     get_profile(null, function(profile) {
+         var storeRequest = Request({
+@@ -165,12 +181,9 @@ function get_profile(progress_callback, finish_callback) {
+             progress_callback("Empty profile");
+             return;
+         }
++        //profile = symbolicateModule.symbolicate(profile, progress_callback, finish_callback);
++        win_sym_profile(profile, progress_callback, finish_callback);
+         
+-        profile = symbolicateModule.symbolicate(profile, progress_callback, finish_callback);
+-        
+-        if (finish_callback != null) {
+-            finish_callback(profile);
+-        }
+     }, 0);
+     return;
+ }
+diff --git a/test.sh b/test.sh
+index 0bd369c..222a29f 100755
+--- a/test.sh
++++ b/test.sh
+@@ -1,2 +1,2 @@
+ #!/bin/bash
+-cfx run --binary /Applications/FirefoxNightly.app
++cfx run --binary /c/firefox
